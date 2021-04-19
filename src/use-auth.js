@@ -1,4 +1,5 @@
 import React, { useContext, createContext, useState } from 'react'
+import { v4 as uuid } from 'uuid'
 /** For more details on
  * `authContext`, `ProvideAuth`, `useAuth` and `useProvideAuth`
  * refer to: https://usehooks.com/useAuth/
@@ -7,7 +8,6 @@ const authContext = createContext()
 
 const ProvideAuth = ({ children }) => {
   const auth = useProvideAuth()
-  console.log('auth', auth)
   return <authContext.Provider value={auth}>{children}</authContext.Provider>
 }
 
@@ -15,24 +15,33 @@ export const useAuth = () => {
   return useContext(authContext)
 }
 
+export const useFakeAuth = () => {
+  return {
+    user: 'testuser',
+    id: 'super-leaf-8',
+    signin: (user, cn) => console.log('signin fake user'),
+    signout: () => console.log('signout fake user'),
+  }
+}
+
 const nameOnlyAuth = {
   isAuthenticated: false,
   signin(cb) {
     nameOnlyAuth.isAuthenticated = true
-    setTimeout(cb, 100) // fake async
   },
   signout(cb) {
     nameOnlyAuth.isAuthenticated = false
-    setTimeout(cb, 100)
   },
 }
 
 export function useProvideAuth() {
   const [user, setUser] = useState(null)
+  const [id, setId] = useState(null)
 
   const signin = (user, cb) => {
     return nameOnlyAuth.signin(() => {
       setUser(user)
+      setId(uuid())
       cb()
     })
   }
@@ -46,6 +55,7 @@ export function useProvideAuth() {
 
   return {
     user,
+    id,
     signin,
     signout,
   }

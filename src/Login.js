@@ -1,18 +1,7 @@
 import React from 'react'
 import { useHistory } from 'react-router-dom'
 import { useAuth } from './use-auth.js'
-import { cx, css } from 'pretty-lights'
 
-const page = css`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  margin: 1em;
-  padding: 2px;
-`
-const lp = css`
-  margin-left: 1em;
-`
 const Login = ({ onError }) => {
   const [user, setUser] = React.useState('')
   let history = useHistory()
@@ -31,16 +20,16 @@ const Login = ({ onError }) => {
   }
 
   return (
-    <div className={page}>
+    <div className="m-2">
       <form onSubmit={(e) => handleLogin(e, user)}>
-        <label className={lp}>Name</label>
+        <label className="form-label">Name</label>
         <input
-          className={lp}
+          className="form-control"
           value={user}
           onChange={(e) => setUser(e.target.value)}
         />
         <input
-          className={cx('button', lp)}
+          className="mt-2 float-end btn btn-dark"
           type="submit"
           value="Start Prating"
         />

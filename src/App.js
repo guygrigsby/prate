@@ -5,27 +5,27 @@ import {
   Route,
   Redirect,
 } from 'react-router-dom'
-import { useAuth } from './use-auth.js'
+import { useAuth, useFakeAuth } from './use-auth.js'
 import Login from './Login.js'
 import ChatWindow from './ChatWindow.js'
 import Alert from './components/Alert.js'
-import { css } from 'pretty-lights'
 import './App.css'
-
-const container = css`
-  max-width: 800px;
-  padding: 2em;
-`
 
 const App = () => {
   const [err, setErr] = React.useState(null)
+  const auth = useAuth()
+  const fakeAuth = useFakeAuth()
+  console.log('auth', auth)
   return (
-    <div className={container}>
+    <div>
       {err ? <Alert msg={err} onClose={() => setErr(null)} /> : null}
       <Router>
         <Switch>
+          <Route path="/test">
+            <ChatWindow {...fakeAuth} />
+          </Route>
           <PrivateRoute exact path="/">
-            <ChatWindow />
+            <ChatWindow {...auth} />
           </PrivateRoute>
           <Route path="/login">
             <Login onError={(err) => setErr(err)} />

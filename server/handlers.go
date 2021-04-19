@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"cloud.google.com/go/pubsub"
 	stream "github.com/GetStream/stream-chat-go/v3"
 	"github.com/guygrigsby/prate/server/prate"
 	"github.com/inconshreveable/log15"
@@ -58,9 +59,47 @@ func QueueEvent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// queue it
+	err = publish(r.Context(), string(b), log)
+	if err != nil {
+		http.Error(w, "failed to queue request", http.StatusInternalServerError)
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+func publish(ctx context.Context, msg string, log log15.Logger) error {
+	projectID, topicID := "prate-1618691363289", "projects/prate-1618691363289/topics/stream-webhooks"
+	client, err := pubsub.NewClient(ctx, projectID)
+	if err != nil {
+		log.Error(
+			"cannot create pubsub client",
+			"err", err,
+		)
+		return err
+	}
+
+	t := client.Topic(topicID)
+	result := t.Publish(ctx, &pubsub.Message{
+		Data: []byte(msg),
+	})
+	// Block until the result is returned and a server-generated
+	// ID is returned for the published message.
+	id, err := result.Get(ctx)
+	if err != nil {
+		log.Error(
+			"Failed to publish msg",
+			"err", err,
+		)
+		return err
+	}
+	log.Debug(
+		"published message",
+		"id", id,
+		"project", projectID,
+		"topic", topicID,
+	)
+	return nil
 }
 
-func Message(ctx context.Context, msg PubSubMessage) error {
+func MessageSubscriber(ctx context.Context, msg PubSubMessage) error {
 	log := log15.New()
 
 	event := msg.Event
